@@ -84,19 +84,21 @@ public struct GoalSetsList: View {
         }
     }
     
+    @ViewBuilder
     var removeButton: some View {
-        Button {
-            if let selectedGoalSet, let didTapGoalSet {
+        if let selectedGoalSet, let didTapGoalSet {
+            Button(role: .destructive) {
                 didTapGoalSet(selectedGoalSet)
+                dismiss()
+            } label: {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Remove \(type)")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-        } label: {
-            HStack {
-                Image(systemName: "trash")
-                Text("Remove \(type)")
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
         }
     }
     
@@ -112,7 +114,7 @@ public struct GoalSetsList: View {
             selectedGoalSet?.id == goalSet.id
         }
         
-        return Button(role: .destructive) {
+        return Button {
             dismiss()
             didTapGoalSet?(goalSet)
         } label: {
