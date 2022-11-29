@@ -11,6 +11,8 @@ public struct GoalSetsList: View {
     @State var showingAddGoalSet: Bool = false
     @State var goalSets: [GoalSet] = []
 
+    @State var isDismissing = false
+    
     let showCloseButton: Bool
     let allowsSelection: Bool
     let forMealItemForm: Bool
@@ -86,7 +88,7 @@ public struct GoalSetsList: View {
     
     @ViewBuilder
     var removeButton: some View {
-        if let selectedGoalSet, let didTapGoalSet {
+        if let selectedGoalSet, let didTapGoalSet, !isDismissing {
             Button(role: .destructive) {
                 didTapGoalSet(selectedGoalSet)
                 dismiss()
@@ -115,6 +117,7 @@ public struct GoalSetsList: View {
         }
         
         return Button {
+            isDismissing = true
             dismiss()
             didTapGoalSet?(goalSet)
         } label: {
