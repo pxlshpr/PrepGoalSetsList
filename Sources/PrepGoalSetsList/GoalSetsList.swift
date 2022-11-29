@@ -13,6 +13,7 @@ public struct GoalSetsList: View {
 
     let showCloseButton: Bool
     let allowsSelection: Bool
+    let forMealItemForm: Bool
 
     let selectedGoalSet: GoalSet?
     let didTapGoalSet: ((GoalSet) -> ())?
@@ -22,19 +23,21 @@ public struct GoalSetsList: View {
         forMeals: Bool = false,
         showCloseButton: Bool = false,
         allowsSelection: Bool = false,
+        forMealItemForm: Bool = false,
         selectedGoalSet: GoalSet? = nil,
         didTapGoalSet: ((GoalSet) -> ())? = nil
     ) {
         self.forMeals = forMeals
         
         let allGoalSets = DataManager.shared.goalSets
-        let goalSets = allGoalSets.filter { forMeals ? $0.isDiet : $0.isForMeal }
+        let goalSets = allGoalSets.filter { forMeals ? $0.isForMeal : $0.isDiet }
         _goalSets = State(initialValue: goalSets)
         
         self.selectedGoalSet = selectedGoalSet
         self.showCloseButton = showCloseButton
         self.allowsSelection = allowsSelection
         self.didTapGoalSet = didTapGoalSet
+        self.forMealItemForm = forMealItemForm
     }
     
     var type: String {
@@ -64,13 +67,43 @@ public struct GoalSetsList: View {
     
     var list: some View {
         List {
-            ForEach(goalSets, id: \.self) { goalSet in
-                if allowsSelection {
-                    button(for: goalSet)
-                } else {
-                    label(for: goalSet)
+            Section {
+                ForEach(goalSets, id: \.self) { goalSet in
+                    if allowsSelection {
+                        button(for: goalSet)
+                    } else {
+                        label(for: goalSet)
+                    }
                 }
             }
+            Section(footer: footer) {
+                if allowsSelection {
+                    removeButton
+                }
+            }
+        }
+    }
+    
+    var removeButton: some View {
+        Button {
+            if let selectedGoalSet, let didTapGoalSet {
+                didTapGoalSet(selectedGoalSet)
+            }
+        } label: {
+            HStack {
+                Image(systemName: "trash")
+                Text("Remove \(type)")
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+    }
+    
+    @ViewBuilder
+    var footer: some View {
+        if forMealItemForm {
+            Text("Your chosen \(type.description) will be saved once you've saved this food.")
         }
     }
     
@@ -79,7 +112,7 @@ public struct GoalSetsList: View {
             selectedGoalSet?.id == goalSet.id
         }
         
-        return Button {
+        return Button(role: .destructive) {
             dismiss()
             didTapGoalSet?(goalSet)
         } label: {
@@ -102,11 +135,11 @@ public struct GoalSetsList: View {
 
     var emptyContent: some View {
         VStack {
-            Text("You haven't created any diets")
+            Text("You haven't created any \(type.lowercased())s")
                 .font(.title2)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(.tertiaryLabel))
-            addDietEmptyButton
+            addEmptyButton
         }
         .padding()
         .padding(.vertical, 15)
@@ -119,14 +152,14 @@ public struct GoalSetsList: View {
     
     //MARK: Helper Views
     
-    var addDietEmptyButton: some View {
+    var addEmptyButton: some View {
         return Button {
             Haptics.feedback(style: .soft)
             showingAddGoalSet = true
         } label: {
             HStack {
                 Image(systemName: "plus")
-                Text("Add a Diet")
+                Text("Add a \(type)")
             }
             .foregroundColor(.white)
             .padding(.horizontal)
@@ -153,7 +186,7 @@ public struct GoalSetsList: View {
     }
     var trailingContents: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-            if !isEmpty {
+            if !isEmpty, !forMealItemForm {
                 Button {
                     Haptics.feedback(style: .soft)
                     showingAddGoalSet = true
