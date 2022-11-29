@@ -1,0 +1,38 @@
+// swift-tools-version: 5.7
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+let package = Package(
+    name: "PrepGoalSetsList",
+    platforms: [
+        .iOS(.v16)
+    ],
+    products: [
+        // Products define the executables and libraries a package produces, and make them visible to other packages.
+        .library(
+            name: "PrepGoalSetsList",
+            targets: ["PrepGoalSetsList"]),
+    ],
+    dependencies: [
+        // Dependencies declare other packages that this package depends on.
+        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/pxlshpr/PrepDataTypes", from: "0.0.203"),
+        .package(url: "https://github.com/pxlshpr/PrepCoreDataStack", from: "0.0.23"),
+        .package(url: "https://github.com/pxlshpr/PrepDietForm", from: "0.0.127"),
+    ],
+    targets: [
+        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
+        // Targets can depend on other targets in this package, and on products in packages this package depends on.
+        .target(
+            name: "PrepGoalSetsList",
+            dependencies: [
+                .product(name: "PrepDataTypes", package: "prepdatatypes"),
+                .product(name: "PrepCoreDataStack", package: "prepcoredatastack"),
+                .product(name: "PrepDietForm", package: "prepdietform"),
+            ]),
+        .testTarget(
+            name: "PrepGoalSetsListTests",
+            dependencies: ["PrepGoalSetsList"]),
+    ]
+)
