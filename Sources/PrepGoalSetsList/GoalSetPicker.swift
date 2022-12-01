@@ -22,20 +22,51 @@ public struct GoalSetPicker: View {
     let didTapGoalSet: ((GoalSet) -> ())?
     
     public init(
-        type: GoalSetType = .day,
+        date: Date,
         showCloseButton: Bool = false,
-        allowsSelection: Bool = false,
         selectedGoalSet: GoalSet? = nil,
         didTapGoalSet: ((GoalSet) -> ())? = nil
     ) {
+        self.init(
+            date: date,
+            meal: nil,
+            showCloseButton: showCloseButton,
+            selectedGoalSet: selectedGoalSet,
+            didTapGoalSet: didTapGoalSet
+        )
+    }
+
+    public init(
+        meal: DayMeal,
+        showCloseButton: Bool = false,
+        selectedGoalSet: GoalSet? = nil,
+        didTapGoalSet: ((GoalSet) -> ())? = nil
+    ) {
+        self.init(
+            date: nil,
+            meal: meal,
+            showCloseButton: showCloseButton,
+            selectedGoalSet: selectedGoalSet,
+            didTapGoalSet: didTapGoalSet
+        )
+    }
+
+    private init(
+        date: Date?,
+        meal: DayMeal?,
+        showCloseButton: Bool = false,
+        selectedGoalSet: GoalSet? = nil,
+        didTapGoalSet: ((GoalSet) -> ())? = nil
+    ) {
+        let type: GoalSetType = meal != nil ? .meal : .day
         _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
         
         self.showCloseButton = showCloseButton
         self.didTapGoalSet = didTapGoalSet
         
         let viewModel = ViewModel(
-            type: type,
-            allowsSelection: allowsSelection,
+            date: date,
+            meal: meal,
             selectedGoalSet: selectedGoalSet
         )
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -44,7 +75,7 @@ public struct GoalSetPicker: View {
     public var body: some View {
         content
             .navigationTitle(viewModel.navigationTitle)
-            .navigationBarTitleDisplayMode(viewModel.navigationBarTitleDisplayMode)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar { leadingContents }
             .toolbar { trailingContents }
             .onAppear(perform: appeared)
@@ -66,17 +97,11 @@ public struct GoalSetPicker: View {
         List {
             Section {
                 ForEach(goalSets, id: \.self) { goalSet in
-                    if viewModel.allowsSelection {
-                        button(for: goalSet)
-                    } else {
-                        label(for: goalSet)
-                    }
+                    button(for: goalSet)
                 }
             }
             Section {
-                if viewModel.allowsSelection {
-                    removeButton
-                }
+                removeButton
             }
         }
     }

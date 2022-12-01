@@ -4,18 +4,19 @@ import PrepDataTypes
 extension GoalSetPicker {
     class ViewModel: ObservableObject {
         let type: GoalSetType
-        let allowsSelection: Bool
-//        let currentDate: Date
+        let date: Date?
+        let meal: DayMeal?
         let selectedGoalSet: GoalSet?
         
         init(
-            type: GoalSetType,
-            allowsSelection: Bool,
+            date: Date?,
+            meal: DayMeal?,
             selectedGoalSet: GoalSet?
         ) {
             self.selectedGoalSet = selectedGoalSet
-            self.type = type
-            self.allowsSelection = allowsSelection
+            self.type = meal != nil ? .meal : .day
+            self.date = date
+            self.meal = meal
         }
     }
 }
@@ -54,10 +55,6 @@ extension GoalSetPicker.ViewModel {
     }
     
     var navigationTitle: String {
-        return allowsSelection ? "Choose a \(type.description)" : "\(type.description)s"
-    }
-    
-    var navigationBarTitleDisplayMode: NavigationBarItem.TitleDisplayMode {
-        allowsSelection ? .inline : .large
-    }
+        return "Choose a \(type.description)"
+    }    
 }
