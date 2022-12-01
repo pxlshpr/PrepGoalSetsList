@@ -133,14 +133,8 @@ public struct GoalSetsList: View {
             bodyProfile: DataManager.shared.user?.bodyProfile
         ) { goalSet, bodyProfile in
             
-            do {
-                if let bodyProfile {
-                    try DataManager.shared.setBodyProfile(bodyProfile)
-                }
-                try DataManager.shared.addNewGoalSet(goalSet)
-            } catch {
-                print("Error persisting data")
-            }
+            /// Save it to the backend
+            DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
 
             /// Add it to the local array
             withAnimation {

@@ -19,20 +19,18 @@ public struct GoalSetPicker: View {
     
     let showCloseButton: Bool
 
-    let didTapGoalSet: ((GoalSet) -> ())?
-    
     public init(
         date: Date,
         showCloseButton: Bool = false,
         selectedGoalSet: GoalSet? = nil,
-        didTapGoalSet: ((GoalSet) -> ())? = nil
+        didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
     ) {
         self.init(
             date: date,
             meal: nil,
             showCloseButton: showCloseButton,
             selectedGoalSet: selectedGoalSet,
-            didTapGoalSet: didTapGoalSet
+            didSelectGoalSet: didSelectGoalSet
         )
     }
 
@@ -40,14 +38,14 @@ public struct GoalSetPicker: View {
         meal: DayMeal,
         showCloseButton: Bool = false,
         selectedGoalSet: GoalSet? = nil,
-        didTapGoalSet: ((GoalSet) -> ())? = nil
+        didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
     ) {
         self.init(
             date: nil,
             meal: meal,
             showCloseButton: showCloseButton,
             selectedGoalSet: selectedGoalSet,
-            didTapGoalSet: didTapGoalSet
+            didSelectGoalSet: didSelectGoalSet
         )
     }
 
@@ -56,18 +54,18 @@ public struct GoalSetPicker: View {
         meal: DayMeal?,
         showCloseButton: Bool = false,
         selectedGoalSet: GoalSet? = nil,
-        didTapGoalSet: ((GoalSet) -> ())? = nil
+        didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
     ) {
         let type: GoalSetType = meal != nil ? .meal : .day
         _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
         
         self.showCloseButton = showCloseButton
-        self.didTapGoalSet = didTapGoalSet
         
         let viewModel = ViewModel(
             date: date,
             meal: meal,
-            selectedGoalSet: selectedGoalSet
+            selectedGoalSet: selectedGoalSet,
+            didSelectGoalSet: didSelectGoalSet
         )
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -134,7 +132,7 @@ public struct GoalSetPicker: View {
         return Button {
             isDismissing = true
             dismiss()
-            didTapGoalSet?(goalSet)
+            viewModel.selectGoalSet(goalSet)
         } label: {
             HStack {
                 Image(systemName: "checkmark")
@@ -224,19 +222,19 @@ public struct GoalSetPicker: View {
             bodyProfile: DataManager.shared.user?.bodyProfile
         ) { goalSet, bodyProfile in
             
-            do {
-                if let bodyProfile {
-                    try DataManager.shared.setBodyProfile(bodyProfile)
-                }
-                try DataManager.shared.addNewGoalSet(goalSet)
-            } catch {
-                print("Error persisting data")
-            }
-
+            /// Save it to the backend
+            DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
+            
             /// Add it to the local array
             withAnimation {
                 goalSets.append(goalSet)
             }
+            
+            /// Select the goal in the backend
+            viewModel.selectGoalSet(goalSet)
+            
+            /// Dismiss the form
+            dismiss()
         }
     }
     
