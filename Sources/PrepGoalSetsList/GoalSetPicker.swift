@@ -5,23 +5,38 @@ import SwiftUISugar
 import SwiftHaptics
 import PrepCoreDataStack
 
-public struct GoalSetsList: View {
- 
+
+public struct GoalSetPicker: View {
+    
     @Environment(\.dismiss) var dismiss
     
     @StateObject var viewModel: ViewModel
     
     @State var showingAddGoalSet: Bool = false
     @State var goalSets: [GoalSet] = []
+
     @State var isDismissing = false
     
+    let showCloseButton: Bool
+
+    let didTapGoalSet: ((GoalSet) -> ())?
+    
     public init(
-        type: GoalSetType
+        type: GoalSetType = .day,
+        showCloseButton: Bool = false,
+        allowsSelection: Bool = false,
+        selectedGoalSet: GoalSet? = nil,
+        didTapGoalSet: ((GoalSet) -> ())? = nil
     ) {
         _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
         
+        self.showCloseButton = showCloseButton
+        self.didTapGoalSet = didTapGoalSet
+        
         let viewModel = ViewModel(
-            type: type
+            type: type,
+            allowsSelection: allowsSelection,
+            selectedGoalSet: selectedGoalSet
         )
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -29,7 +44,7 @@ public struct GoalSetsList: View {
     public var body: some View {
         content
             .navigationTitle(viewModel.navigationTitle)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(viewModel.navigationBarTitleDisplayMode)
             .toolbar { leadingContents }
             .toolbar { trailingContents }
             .onAppear(perform: appeared)
@@ -49,7 +64,56 @@ public struct GoalSetsList: View {
     
     var list: some View {
         List {
-            ForEach(goalSets, id: \.self) { goalSet in
+            Section {
+                ForEach(goalSets, id: \.self) { goalSet in
+                    if viewModel.allowsSelection {
+                        button(for: goalSet)
+                    } else {
+                        label(for: goalSet)
+                    }
+                }
+            }
+            Section {
+                if viewModel.allowsSelection {
+                    removeButton
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var removeButton: some View {
+//        if let selectedGoalSet, let didTapGoalSet, !isDismissing {
+        if !isDismissing {
+            Button(role: .destructive) {
+//                didTapGoalSet(selectedGoalSet)
+                viewModel.removeGoalSet()
+                dismiss()
+            } label: {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Remove \(viewModel.type.description)")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+        }
+    }
+    
+    func button(for goalSet: GoalSet) -> some View {
+        var isSelectedGoalSet: Bool {
+            viewModel.selectedGoalSet?.id == goalSet.id
+        }
+        
+        return Button {
+            isDismissing = true
+            dismiss()
+            didTapGoalSet?(goalSet)
+        } label: {
+            HStack {
+                Image(systemName: "checkmark")
+                    .opacity(isSelectedGoalSet ? 1 : 0)
                 label(for: goalSet)
             }
         }
@@ -105,11 +169,13 @@ public struct GoalSetsList: View {
     
     var leadingContents: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarLeading) {
-            Button {
-                Haptics.feedback(style: .soft)
-                dismiss()
-            } label: {
-                closeButtonLabel
+            if showCloseButton {
+                Button {
+                    Haptics.feedback(style: .soft)
+                    dismiss()
+                } label: {
+                    closeButtonLabel
+                }
             }
         }
     }
