@@ -13,6 +13,7 @@ public struct GoalSetsList: View {
 
     @State var isDismissing = false
     
+    
     let showCloseButton: Bool
     let allowsSelection: Bool
     let forMealItemForm: Bool

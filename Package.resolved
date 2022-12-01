@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pxlshpr/PrepCoreDataStack",
       "state" : {
-        "revision" : "e76f95389a7e51bb3f4c04f449b95cbc1803fe13",
-        "version" : "0.0.23"
+        "revision" : "0d51e51a46512f3ec89c8df82b6ded4612e07cbb",
+        "version" : "0.0.24"
       }
     },
     {
@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pxlshpr/PrepDataTypes",
       "state" : {
-        "revision" : "b4108aff46600d16cf04832651e90875f2c0abea",
-        "version" : "0.0.203"
+        "revision" : "fece3d904d36f080c783b9b93c65c667d4f187b5",
+        "version" : "0.0.207"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pxlshpr/PrepDietForm",
       "state" : {
-        "revision" : "3c1031be03a9133505051117f8f6b6e8c9e7ca4f",
-        "version" : "0.0.127"
+        "revision" : "301a9350c6a3720b39aaee40acc45f62ab0f568b",
+        "version" : "0.0.128"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pxlshpr/PrepViews",
       "state" : {
-        "revision" : "cee637253cd011a4085149ba160702a1a58714ac",
-        "version" : "0.0.95"
+        "revision" : "c6f80e3d4c8544aa8fa98315241fcdda5b237375",
+        "version" : "0.0.123"
       }
     },
     {
