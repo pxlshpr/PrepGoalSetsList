@@ -11,6 +11,8 @@ extension GoalSetPicker {
         
         let didSelectGoalSet: ((GoalSet?, Day?) -> ())
 
+        var day: Day?
+        
         init(
             date: Date?,
             meal: DayMeal?,
@@ -34,20 +36,23 @@ extension GoalSetPicker.ViewModel {
             case .day:
                 guard let date else { return }
 //                if day?.goalSet?.id == goalSet.id {
-//                    try DataManager.shared.removeGoalSet(on: date)
+                if selectedGoalSet?.id == goalSet.id {
+                    try DataManager.shared.removeGoalSet(on: date)
 //                    self.day?.goalSet = nil
-//                    didSelectGoalSet(nil, nil)
-//                } else {
-//                    let day = try DataManager.shared.setGoalSet(goalSet, on: date)
+//                    self.selectedGoalSet = nil
+                    didSelectGoalSet(nil, nil)
+                } else {
+                    let day = try DataManager.shared.setGoalSet(goalSet, on: date)
+//                    self.selectedGoalSet = selectedGoalSet
 //                    self.day = day
-//                    didSelectGoalSet(goalSet, day)
-//                }
+                    didSelectGoalSet(goalSet, day)
+                }
             case .meal:
                 /// [ ] If its for a meal, we need to remove or set the goal set on the meal, and call the callback
                 break
             }
             
-            NotificationCenter.default.post(name: .didUpdateDiet, object: nil)
+ 
         } catch {
             print("Error setting GoalSet: \(error)")
         }
