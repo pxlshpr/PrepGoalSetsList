@@ -32,7 +32,7 @@ extension GoalSetPicker {
 
 extension GoalSetPicker.ViewModel {
     
-    func selectGoalSet(_ goalSet: GoalSet) {
+    func selectGoalSet_legacy(_ goalSet: GoalSet) {
         do {
             switch type {
             case .day:
@@ -55,33 +55,37 @@ extension GoalSetPicker.ViewModel {
         }
     }
     
-    func selectGoalSet_new(_ goalSet: GoalSet) throws {
-        if selectedGoalSet?.id == goalSet.id {
-            switch type {
-            case .day:
-                guard let date else { return }
-                try DataManager.shared.removeGoalSet(on: date)
-            case .meal:
-                /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
-                break
+    func selectGoalSet(_ goalSet: GoalSet) {
+        do {
+            if selectedGoalSet?.id == goalSet.id {
+                switch type {
+                case .day:
+                    guard let date else { return }
+                    try DataManager.shared.removeGoalSet(on: date)
+                case .meal:
+                    /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
+                    break
+                }
+                
+                /// remove selection
+                didSelectGoalSet(nil, nil)
+                
+            } else {
+                
+                switch type {
+                case .day:
+                    guard let date else { return }
+                    /// select
+                    let day = try DataManager.shared.setGoalSet(goalSet, on: date)
+                    didSelectGoalSet(goalSet, day)
+                case .meal:
+                    /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
+                    didSelectGoalSet(goalSet, nil)
+                    break
+                }
             }
-            
-            /// remove selection
-            didSelectGoalSet(nil, nil)
-            
-        } else {
-            
-            switch type {
-            case .day:
-                guard let date else { return }
-                /// select
-                let day = try DataManager.shared.setGoalSet(goalSet, on: date)
-                didSelectGoalSet(goalSet, day)
-            case .meal:
-                /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
-                didSelectGoalSet(goalSet, nil)
-                break
-            }
+        } catch {
+            print("Error setting GoalSet: \(error)")
         }
     }
     

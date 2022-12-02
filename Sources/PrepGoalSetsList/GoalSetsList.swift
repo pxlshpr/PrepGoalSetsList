@@ -50,18 +50,21 @@ public struct GoalSetsList: View {
     var list: some View {
         List {
             ForEach(goalSets, id: \.self) { goalSet in
-                label(for: goalSet)
+                Section {
+                    cell(for: goalSet)
+                }
             }
         }
     }
     
-    func label(for goalSet: GoalSet) -> some View {
-        HStack {
-            Text(goalSet.emoji)
-            Text(goalSet.name)
-                .foregroundColor(.primary)
-            Spacer()
-        }
+    func cell(for goalSet: GoalSet) -> some View {
+        GoalSetCell(goalSet: goalSet)
+//        HStack {
+//            Text(goalSet.emoji)
+//            Text(goalSet.name)
+//                .foregroundColor(.primary)
+//            Spacer()
+//        }
     }
 
     var emptyContent: some View {
