@@ -55,12 +55,42 @@ extension GoalSetPicker.ViewModel {
         }
     }
     
+    func selectGoalSet_new(_ goalSet: GoalSet) throws {
+        if selectedGoalSet?.id == goalSet.id {
+            switch type {
+            case .day:
+                guard let date else { return }
+                try DataManager.shared.removeGoalSet(on: date)
+            case .meal:
+                /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
+                break
+            }
+            
+            /// remove selection
+            didSelectGoalSet(nil, nil)
+            
+        } else {
+            
+            switch type {
+            case .day:
+                guard let date else { return }
+                /// select
+                let day = try DataManager.shared.setGoalSet(goalSet, on: date)
+                didSelectGoalSet(goalSet, day)
+            case .meal:
+                /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
+                didSelectGoalSet(goalSet, nil)
+                break
+            }
+        }
+    }
+    
     func removeGoalSet() {
         guard let selectedGoalSet else { return }
         selectGoalSet(selectedGoalSet)
     }
     
     var navigationTitle: String {
-        return "Choose a \(type.description)"
+        return "Select a \(type.description)"
     }    
 }

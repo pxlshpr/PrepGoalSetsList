@@ -19,6 +19,8 @@ public struct GoalSetPicker: View {
     
     let showCloseButton: Bool
 
+    @State var refreshBool: Bool = false
+    
     public init(
         date: Date,
         showCloseButton: Bool = false,
@@ -82,6 +84,7 @@ public struct GoalSetPicker: View {
             .toolbar { trailingContents }
             .onAppear(perform: appeared)
             .fullScreenCover(isPresented: $showingAddGoalSet, content: { addGoalSetSheet })
+            .id(refreshBool)
     }
     
     //MARK: Content
@@ -110,8 +113,7 @@ public struct GoalSetPicker: View {
     
     @ViewBuilder
     var removeButton: some View {
-//        if let selectedGoalSet, let didTapGoalSet, !isDismissing {
-        if !isDismissing {
+        if viewModel.selectedGoalSet != nil, !isDismissing {
             Button(role: .destructive) {
 //                didTapGoalSet(selectedGoalSet)
                 viewModel.removeGoalSet()
@@ -139,10 +141,25 @@ public struct GoalSetPicker: View {
             viewModel.selectGoalSet(goalSet)
         } label: {
             HStack {
+                label(for: goalSet)
+                Spacer()
+                durationPicker
                 Image(systemName: "checkmark")
                     .opacity(isSelectedGoalSet ? 1 : 0)
-                label(for: goalSet)
             }
+        }
+    }
+    
+    var durationPicker: some View {
+        HStack {
+            Text("1 hour")
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.footnote)
+                .foregroundColor(Color(.tertiaryLabel))
+            Text("30 min.")
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.footnote)
+                .foregroundColor(Color(.tertiaryLabel))
         }
     }
     
@@ -218,7 +235,7 @@ public struct GoalSetPicker: View {
             }
         }
     }
-    
+
     var addGoalSetSheet: some View {
         GoalSetForm(
             type: viewModel.type,
@@ -251,18 +268,122 @@ public struct GoalSetPicker: View {
     //MARK: Actions
     
     func appeared() {
-//        loadDiets()
+//        refreshBool.toggle()
+    }
+}
+
+struct GoalSetCell: View {
+
+    class ViewModel: ObservableObject {
+        @Published var goalSet: GoalSet
+        init(goalSet: GoalSet) {
+            self.goalSet = goalSet
+        }
     }
     
-//    func loadDiets() {
-//        Task {
-//            let goalSets = DataManager.shared.goalSets
-//            let diets = goalSets.filter { $0.isDiet }
-//            await MainActor.run {
-//                withAnimation {
-//                    self.diets = diets
-//                }
-//            }
-//        }
-//    }
+    @StateObject var viewModel: ViewModel
+    
+    init(goalSet: GoalSet) {
+        let viewModel = ViewModel(goalSet: goalSet)
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    
+    var body: some View {
+        HStack {
+            Text(viewModel.goalSet.emoji)
+            Text(viewModel.goalSet.name)
+                .foregroundColor(.primary)
+            Spacer()
+        }
+    }
+
+}
+
+struct GoalSetPickerCell: View {
+    
+    class ViewModel: ObservableObject {
+        @Published var goalSet: GoalSet
+        init(goalSet: GoalSet) {
+            self.goalSet = goalSet
+        }
+    }
+
+    @StateObject var viewModel: ViewModel
+    
+    init(goalSet: GoalSet) {
+        let viewModel = ViewModel(goalSet: goalSet)
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    var body: some View {
+        HStack {
+            GoalSetCell(goalSet: viewModel.goalSet)
+        }
+    }
+}
+
+import PrepMocks
+
+struct GoalSetCellPreview: View {
+    
+    var goalSet: GoalSet {
+        GoalSet(
+            id: UUID(),
+            type: .day,
+            name: "Cutting",
+            emoji: "🫃🏽",
+            goals: [],
+            syncStatus: .notSynced,
+            updatedAt: 0,
+            deletedAt: nil
+        )
+    }
+    
+    var body: some View {
+        FormStyledScrollView {
+            FormStyledSection {
+                GoalSetCell(goalSet: goalSet)
+            }
+        }
+    }
+}
+
+struct GoalSetPickerCellPreview: View {
+    
+    var goalSet: GoalSet {
+        GoalSet(
+            id: UUID(),
+            type: .meal,
+            name: "Pre-Workout Meal",
+            emoji: "🏋🏽‍♂️",
+            goals: [
+                .init(type: .macro(.quantityPerWorkoutDuration(.min), .carb),
+                      lowerBound: 1, upperBound: nil)
+            ],
+            syncStatus: .notSynced,
+            updatedAt: 0,
+            deletedAt: nil
+        )
+    }
+
+    
+    var body: some View {
+        FormStyledScrollView {
+            FormStyledSection {
+                GoalSetPickerCell(goalSet: goalSet)
+            }
+        }
+    }
+}
+
+struct GoalSetCell_Previews: PreviewProvider {
+    static var previews: some View {
+        GoalSetCellPreview()
+    }
+}
+
+struct GoalSetPickerCell_Previews: PreviewProvider {
+    static var previews: some View {
+        GoalSetPickerCellPreview()
+    }
 }
