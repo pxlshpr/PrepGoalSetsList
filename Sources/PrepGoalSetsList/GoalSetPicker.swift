@@ -35,7 +35,7 @@ public struct GoalSetPicker: View {
     }
 
     public init(
-        meal: DayMeal,
+        meal: DayMeal?,
         showCloseButton: Bool = false,
         selectedGoalSet: GoalSet? = nil,
         didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
@@ -56,12 +56,16 @@ public struct GoalSetPicker: View {
         selectedGoalSet: GoalSet? = nil,
         didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
     ) {
-        let type: GoalSetType = meal != nil ? .meal : .day
+        /// We set the `type` based on whether a `date` was provided, as the `meal: DayMeal` could be nil
+        /// when using this to pick a `GoalSet` for a meal in the `MealForm`.
+        /// (it's currently used when switching meal types in the `MealItemMeters` component).
+        let type: GoalSetType = date != nil ? .day : .meal
         _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
         
         self.showCloseButton = showCloseButton
         
         let viewModel = ViewModel(
+            type: type,
             date: date,
             meal: meal,
             selectedGoalSet: selectedGoalSet,

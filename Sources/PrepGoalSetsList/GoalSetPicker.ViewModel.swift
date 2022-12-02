@@ -14,15 +14,17 @@ extension GoalSetPicker {
         var day: Day?
         
         init(
+            type: GoalSetType,
             date: Date?,
             meal: DayMeal?,
             selectedGoalSet: GoalSet?,
             didSelectGoalSet: @escaping ((GoalSet?, Day?) -> ())
         ) {
-            self.selectedGoalSet = selectedGoalSet
-            self.type = meal != nil ? .meal : .day
+            self.type = type
+//            self.type = meal != nil ? .meal : .day
             self.date = date
             self.meal = meal
+            self.selectedGoalSet = selectedGoalSet
             self.didSelectGoalSet = didSelectGoalSet
         }
     }
@@ -35,20 +37,15 @@ extension GoalSetPicker.ViewModel {
             switch type {
             case .day:
                 guard let date else { return }
-//                if day?.goalSet?.id == goalSet.id {
                 if selectedGoalSet?.id == goalSet.id {
                     try DataManager.shared.removeGoalSet(on: date)
-//                    self.day?.goalSet = nil
-//                    self.selectedGoalSet = nil
                     didSelectGoalSet(nil, nil)
                 } else {
                     let day = try DataManager.shared.setGoalSet(goalSet, on: date)
-//                    self.selectedGoalSet = selectedGoalSet
-//                    self.day = day
                     didSelectGoalSet(goalSet, day)
                 }
             case .meal:
-                /// [ ] If its for a meal, we need to remove or set the goal set on the meal, and call the callback
+                /// [ ] If its for a meal and we have a `Meal` provided, persist the change with the backend
                 break
             }
             
