@@ -15,6 +15,8 @@ public struct GoalSetsList: View {
     @State var goalSets: [GoalSet] = []
     @State var isDismissing = false
     
+    let didUpdateGoalSets = NotificationCenter.default.publisher(for: .didUpdateGoalSets)
+
     public init(
         type: GoalSetType
     ) {
@@ -34,8 +36,18 @@ public struct GoalSetsList: View {
             .toolbar { trailingContents }
             .onAppear(perform: appeared)
             .fullScreenCover(isPresented: $showingAddGoalSet, content: { addGoalSetSheet })
+            .onReceive(didUpdateGoalSets, perform: didUpdateGoalSets)
     }
     
+    func didUpdateGoalSets(notification: Notification) {
+        /// Delay this a bit to allow `DataManager` to load them into the array first
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            withAnimation {
+                goalSets = DataManager.shared.goalSets(for: viewModel.type)
+            }
+        }
+    }
+
     //MARK: Content
     
     @ViewBuilder
