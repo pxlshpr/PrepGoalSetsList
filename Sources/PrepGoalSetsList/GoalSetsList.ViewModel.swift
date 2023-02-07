@@ -4,11 +4,11 @@ import PrepDataTypes
 extension GoalSetsList {
     class ViewModel: ObservableObject {
         let type: GoalSetType
+        var goalSetToEdit: GoalSet?
         
-        init(
-            type: GoalSetType
-        ) {
+        init(type: GoalSetType) {
             self.type = type
+            goalSetToEdit = nil
         }
     }
 }
@@ -16,6 +16,6 @@ extension GoalSetsList {
 extension GoalSetsList.ViewModel {
     
     var navigationTitle: String {
-        "\(type.description)s"
+        "My \(type.description)s"
     }
 }

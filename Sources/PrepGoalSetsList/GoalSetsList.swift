@@ -12,6 +12,7 @@ public struct GoalSetsList: View {
     @StateObject var viewModel: ViewModel
     
     @State var showingAddGoalSet: Bool = false
+    @State var showingEditGoalSet: Bool = false
     @State var goalSets: [GoalSet] = []
     @State var isDismissing = false
     
@@ -32,10 +33,10 @@ public struct GoalSetsList: View {
         content
             .navigationTitle(viewModel.navigationTitle)
             .navigationBarTitleDisplayMode(.large)
-            .toolbar { leadingContents }
             .toolbar { trailingContents }
             .onAppear(perform: appeared)
-            .fullScreenCover(isPresented: $showingAddGoalSet, content: { addGoalSetSheet })
+            .sheet(isPresented: $showingAddGoalSet, content: { addGoalSetSheet })
+            .sheet(isPresented: $showingEditGoalSet, content: { editGoalSetSheet })
             .onReceive(didUpdateGoalSets, perform: didUpdateGoalSets)
     }
     
@@ -50,8 +51,15 @@ public struct GoalSetsList: View {
 
     //MARK: Content
     
-    @ViewBuilder
     var content: some View {
+        ZStack {
+            listLayer
+            addButtonLayer
+        }
+    }
+    
+    @ViewBuilder
+    var listLayer: some View {
         if isEmpty {
             emptyContent
         } else {
@@ -62,21 +70,27 @@ public struct GoalSetsList: View {
     var list: some View {
         List {
             ForEach(goalSets, id: \.self) { goalSet in
-                Section {
-                    cell(for: goalSet)
-                }
+                cell(for: goalSet)
             }
         }
     }
     
     func cell(for goalSet: GoalSet) -> some View {
-        GoalSetCell(goalSet: goalSet)
-//        HStack {
-//            Text(goalSet.emoji)
-//            Text(goalSet.name)
-//                .foregroundColor(.primary)
-//            Spacer()
-//        }
+        var button: some View {
+            Button {
+                viewModel.goalSetToEdit = goalSet
+                showingEditGoalSet = true
+            } label: {
+                GoalSetCell(goalSet: goalSet)
+            }
+        }
+        
+        var menu: some View {
+            //TODO: Create a menu listing out "Edit" and "Duplicate", AND "Delete", and possibly others like view stats
+            Color.clear
+        }
+        
+        return button
     }
 
     var emptyContent: some View {
@@ -118,27 +132,56 @@ public struct GoalSetsList: View {
         .buttonStyle(.borderless)
     }
     
-    var leadingContents: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
-            Button {
-                Haptics.feedback(style: .soft)
-                dismiss()
-            } label: {
-                closeButtonLabel
-            }
+    var closeButton: some View {
+        Button {
+            Haptics.feedback(style: .soft)
+            dismiss()
+        } label: {
+            closeButtonLabel
         }
     }
     var trailingContents: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-            if !isEmpty {
-                Button {
-                    Haptics.feedback(style: .soft)
-                    showingAddGoalSet = true
-                } label: {
-                    Image(systemName: "plus")
-                }
+            closeButton
+        }
+    }
+    
+    var addButtonLayer: some View {
+        
+        var saveButton: some View {
+            Button {
+                Haptics.feedback(style: .soft)
+                showingAddGoalSet = true
+            } label: {
+                Image(systemName:  "plus")
+                    .font(.system(size: 25))
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .frame(width: 48, height: 48)
+                    .background(
+                        ZStack {
+                            Circle()
+                                .foregroundStyle(Color.accentColor.gradient)
+                        }
+                        .shadow(color: Color(.black).opacity(0.2), radius: 3, x: 0, y: 3)
+                    )
             }
         }
+        
+        var layer: some View {
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    if !isEmpty {
+                        saveButton
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        
+        return layer
     }
     
     var addGoalSetSheet: some View {
@@ -154,6 +197,30 @@ public struct GoalSetsList: View {
             /// Add it to the local array
             withAnimation {
                 goalSets.append(goalSet)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var editGoalSetSheet: some View {
+        if let goalSetToEdit = viewModel.goalSetToEdit {
+            GoalSetForm(
+                type: viewModel.type,
+                existingGoalSet: goalSetToEdit,
+                bodyProfile: DataManager.shared.user?.bodyProfile
+            ) { goalSet, bodyProfile in
+                
+                //TODO: Add a parameter that returns whether user wants to overwrite previous uses or not
+                //TODO: Audit and bring this back
+                /// [ ] What do we do with the bodyProfile if updated?
+//
+//                /// Save it to the backend
+//                DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
+//
+//                /// Add it to the local array
+//                withAnimation {
+//                    goalSets.append(goalSet)
+//                }
             }
         }
     }
