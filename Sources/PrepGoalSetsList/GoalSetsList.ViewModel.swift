@@ -5,10 +5,12 @@ extension GoalSetsList {
     class ViewModel: ObservableObject {
         let type: GoalSetType
         var goalSetToEdit: GoalSet?
-        
+        var isDuplicating: Bool
+
         init(type: GoalSetType) {
             self.type = type
             goalSetToEdit = nil
+            isDuplicating = false
         }
     }
 }

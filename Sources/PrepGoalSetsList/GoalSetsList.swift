@@ -76,21 +76,46 @@ public struct GoalSetsList: View {
     }
     
     func cell(for goalSet: GoalSet) -> some View {
-        var button: some View {
+        var editButton: some View {
             Button {
                 viewModel.goalSetToEdit = goalSet
+                viewModel.isDuplicating = false
                 showingEditGoalSet = true
             } label: {
-                GoalSetCell(goalSet: goalSet)
+                Label("Edit", systemImage: "square.and.pencil")
             }
         }
         
-        var menu: some View {
-            //TODO: Create a menu listing out "Edit" and "Duplicate", AND "Delete", and possibly others like view stats
-            Color.clear
+        var duplicateButton: some View {
+            Button {
+                viewModel.goalSetToEdit = goalSet
+                viewModel.isDuplicating = true
+                showingEditGoalSet = true
+            } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+            }
         }
         
-        return button
+        var deleteButton: some View {
+            Button {
+                
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        
+        return Menu {
+            editButton
+            duplicateButton
+            Divider()
+            deleteButton
+        } label: {
+            GoalSetCell(goalSet: goalSet)
+        }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture().onEnded {
+            Haptics.selectionFeedback()
+        })
     }
 
     var emptyContent: some View {
@@ -207,6 +232,7 @@ public struct GoalSetsList: View {
             GoalSetForm(
                 type: viewModel.type,
                 existingGoalSet: goalSetToEdit,
+                isDuplicating: viewModel.isDuplicating,
                 bodyProfile: DataManager.shared.user?.bodyProfile
             ) { goalSet, bodyProfile in
                 
