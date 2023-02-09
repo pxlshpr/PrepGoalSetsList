@@ -242,7 +242,7 @@ public struct GoalSetPicker: View {
             type: viewModel.type,
             existingGoalSet: nil,
             bodyProfile: DataManager.shared.user?.bodyProfile
-        ) { goalSet, bodyProfile in
+        ) { goalSet, bodyProfile, _ in
             
             /// Save it to the backend
             DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
@@ -374,119 +374,5 @@ struct GoalSetPickerCell: View {
             }
         }
         
-    }
-}
-
-//MARK: - 👁‍🗨 Previews
-
-import PrepMocks
-
-struct GoalSetCellPreview: View {
-    
-    var goalSet: GoalSet {
-        GoalSet(
-            id: UUID(),
-            type: .day,
-            name: "Cutting",
-            emoji: "🫃🏽",
-            goals: [],
-            syncStatus: .notSynced,
-            updatedAt: 0,
-            deletedAt: nil
-        )
-    }
-    
-    var body: some View {
-        FormStyledScrollView {
-            FormStyledSection {
-                GoalSetCell(goalSet: goalSet)
-            }
-        }
-    }
-}
-
-struct GoalSetPickerCellPreview: View {
-    
-    var preworkoutMealType: GoalSet {
-        GoalSet(
-            id: UUID(),
-            type: .meal,
-            name: "Pre-Workout Meal",
-            emoji: "🍞",
-            goals: [
-                .init(type: .macro(.quantityPerBodyMass(.weight, .kg), .carb),
-                      lowerBound: 1, upperBound: nil),
-                .init(type: .energy(.fixed(.kcal)),
-                      lowerBound: nil, upperBound: 500),
-                .init(type: .macro(.fixed, .protein),
-                      lowerBound: 20, upperBound: 25)
-            ],
-            syncStatus: .notSynced,
-            updatedAt: 0,
-            deletedAt: nil
-        )
-    }
-
-    
-    var intraWorkoutMealType: GoalSet {
-        GoalSet(
-            id: UUID(),
-            type: .meal,
-            name: "Intra-Workout Snack",
-            emoji: "🏋🏽‍♂️",
-            goals: [
-                .init(type: .macro(.quantityPerWorkoutDuration(.min), .carb),
-                      lowerBound: 0.5, upperBound: nil)
-            ],
-            syncStatus: .notSynced,
-            updatedAt: 0,
-            deletedAt: nil
-        )
-    }
-    
-    var postWorkoutMealType: GoalSet {
-        GoalSet(
-            id: UUID(),
-            type: .meal,
-            name: "Post-Workout Meal",
-            emoji: "🏁",
-            goals: [
-                .init(type: .macro(.fixed, .carb),
-                      lowerBound: nil, upperBound: 50),
-                .init(type: .energy(.fixed(.kcal)),
-                      lowerBound: nil, upperBound: 500),
-                .init(type: .macro(.fixed, .protein),
-                      lowerBound: 30, upperBound: 50)
-            ],
-            syncStatus: .notSynced,
-            updatedAt: 0,
-            deletedAt: nil
-        )
-    }
-    
-    var body: some View {
-        FormStyledScrollView {
-            FormStyledSection {
-                GoalSetPickerCell(goalSet: preworkoutMealType, isSelected: true)
-            }
-            FormStyledSection {
-                GoalSetPickerCell(goalSet: intraWorkoutMealType)
-            }
-            FormStyledSection {
-                GoalSetPickerCell(goalSet: postWorkoutMealType)
-            }
-        }
-    }
-}
-
-struct GoalSetCell_Previews: PreviewProvider {
-    static var previews: some View {
-        GoalSetCellPreview()
-    }
-}
-
-struct GoalSetPickerCell_Previews: PreviewProvider {
-    static var previews: some View {
-        GoalSetPickerCellPreview()
     }
 }

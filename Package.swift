@@ -17,10 +17,9 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/pxlshpr/PrepDataTypes", from: "0.0.210"),
-        .package(url: "https://github.com/pxlshpr/PrepMocks", from: "0.0.3"),
-        .package(url: "https://github.com/pxlshpr/PrepCoreDataStack", from: "0.0.25"),
-        .package(url: "https://github.com/pxlshpr/PrepDietForm", from: "0.0.129"),
+        .package(url: "https://github.com/pxlshpr/PrepDataTypes", from: "0.0.255"),
+        .package(url: "https://github.com/pxlshpr/PrepCoreDataStack", from: "0.0.29"),
+        .package(url: "https://github.com/pxlshpr/PrepDietForm", from: "0.0.137"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

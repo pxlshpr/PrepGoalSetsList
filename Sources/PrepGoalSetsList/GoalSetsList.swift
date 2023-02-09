@@ -13,7 +13,6 @@ public struct GoalSetsList: View {
     
     @State var showingAddGoalSet: Bool = false
     @State var showingEditGoalSet: Bool = false
-    @State var goalSets: [GoalSet] = []
     @State var isDismissing = false
     
     let didUpdateGoalSets = NotificationCenter.default.publisher(for: .didUpdateGoalSets)
@@ -21,10 +20,11 @@ public struct GoalSetsList: View {
     public init(
         type: GoalSetType
     ) {
-        _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
+//        _goalSets = State(initialValue: DataManager.shared.goalSets(for: type))
         
         let viewModel = ViewModel(
-            type: type
+            type: type,
+            goalSets: DataManager.shared.goalSets(for: type)
         )
         _viewModel = StateObject(wrappedValue: viewModel)
     }
@@ -43,9 +43,15 @@ public struct GoalSetsList: View {
     func didUpdateGoalSets(notification: Notification) {
         /// Delay this a bit to allow `DataManager` to load them into the array first
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            withAnimation {
-                goalSets = DataManager.shared.goalSets(for: viewModel.type)
+            
+            let updatedGoalSets = DataManager.shared.goalSets(for: viewModel.type)
+            
+            if !updatedGoalSets.hasSameData(as: viewModel.goalSets) {
+                withAnimation {
+                    viewModel.goalSets = DataManager.shared.goalSets(for: viewModel.type)
+                }
             }
+            
         }
     }
 
@@ -69,7 +75,7 @@ public struct GoalSetsList: View {
     
     var list: some View {
         List {
-            ForEach(goalSets, id: \.self) { goalSet in
+            ForEach(viewModel.goalSets, id: \.self) { goalSet in
                 cell(for: goalSet)
             }
         }
@@ -214,16 +220,24 @@ public struct GoalSetsList: View {
             type: viewModel.type,
             existingGoalSet: nil,
             bodyProfile: DataManager.shared.user?.bodyProfile
-        ) { goalSet, bodyProfile in
+        ) { goalSet, bodyProfile, _ in
             
             /// Save it to the backend
             DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
 
             /// Add it to the local array
             withAnimation {
-                goalSets.append(goalSet)
+                viewModel.goalSets.append(goalSet)
+                sortGoalSets()
             }
         }
+    }
+    
+    func sortGoalSets() {
+        viewModel.goalSets.sort(by: {
+            if $0.name == $1.name { return $0.emoji < $1.emoji }
+            return $0.name < $1.name
+        })
     }
     
     @ViewBuilder
@@ -234,8 +248,35 @@ public struct GoalSetsList: View {
                 existingGoalSet: goalSetToEdit,
                 isDuplicating: viewModel.isDuplicating,
                 bodyProfile: DataManager.shared.user?.bodyProfile
-            ) { goalSet, bodyProfile in
+            ) { goalSet, bodyProfile, overwritingPastUses in
                 
+                /// Save it to the backend
+                DataManager.shared.addGoalSetAndBodyProfile(goalSet, bodyProfile: bodyProfile)
+
+                /// Add it to the local array
+                withAnimation {
+                    
+                    viewModel.goalSets.append(goalSet)
+                    
+                    if !viewModel.isDuplicating {
+                        viewModel.goalSets.removeAll(where: { $0.id == goalSetToEdit.id })
+                    }
+                    sortGoalSets()
+                }
+                
+                /// If we're not duplicating it, soft-delete the previous one `deletedAt`
+                if !viewModel.isDuplicating {
+                    DataManager.shared.deleteGoalSet(goalSetToEdit)
+                }
+                
+                if overwritingPastUses {
+                    DataManager.shared.overwritePastUses(
+                        of: goalSetToEdit,
+                        with: goalSet
+                    )
+                }
+
+
                 //TODO: Add a parameter that returns whether user wants to overwrite previous uses or not
                 //TODO: Audit and bring this back
                 /// [ ] What do we do with the bodyProfile if updated?
@@ -254,7 +295,7 @@ public struct GoalSetsList: View {
     //MARK: Convenience
     
     var isEmpty: Bool {
-        goalSets.isEmpty
+        viewModel.goalSets.isEmpty
     }
     
     //MARK: Actions

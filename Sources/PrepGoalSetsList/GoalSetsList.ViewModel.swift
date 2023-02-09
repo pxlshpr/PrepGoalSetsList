@@ -7,7 +7,10 @@ extension GoalSetsList {
         var goalSetToEdit: GoalSet?
         var isDuplicating: Bool
 
-        init(type: GoalSetType) {
+        @Published var goalSets: [GoalSet] = []
+
+        init(type: GoalSetType, goalSets: [GoalSet] = []) {
+            self.goalSets = goalSets
             self.type = type
             goalSetToEdit = nil
             isDuplicating = false
