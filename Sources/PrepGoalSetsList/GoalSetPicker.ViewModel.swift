@@ -51,7 +51,7 @@ extension GoalSetPicker.ViewModel {
             
  
         } catch {
-            print("Error setting GoalSet: \(error)")
+            cprint("Error setting GoalSet: \(error)")
         }
     }
     
@@ -85,7 +85,7 @@ extension GoalSetPicker.ViewModel {
                 }
             }
         } catch {
-            print("Error setting GoalSet: \(error)")
+            cprint("Error setting GoalSet: \(error)")
         }
     }
     
